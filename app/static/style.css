@@ -1,10 +1,8 @@
-/* =========================================================
-   Plum OPD Claim Adjudication Tool — Premium Dark Theme
-   ========================================================= */
+/* Plum OPD Claim Adjudication Tool - Dark Theme CSS */
 
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap');
 
-/* ─── Design Tokens ─────────────────────────────────────── */
+/* Design Tokens */
 :root {
   --bg-primary:      #06040f;
   --bg-secondary:    #0d0a1e;
@@ -39,7 +37,7 @@
   --transition:      0.22s cubic-bezier(.4,0,.2,1);
 }
 
-/* ─── Reset ─────────────────────────────────────────────── */
+/* Reset */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
@@ -50,13 +48,13 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Layout ─────────────────────────────────────────────── */
+/* Layout */
 .app-shell {
   display: flex;
   min-height: 100vh;
 }
 
-/* ─── Sidebar ─────────────────────────────────────────────── */
+/* Sidebar */
 .sidebar {
   width: var(--sidebar-w);
   background: var(--bg-secondary);
@@ -145,7 +143,7 @@ body {
 }
 .sidebar-policy-badge .badge-label { font-weight: 600; display: block; margin-bottom: 2px; }
 
-/* ─── Main Content ───────────────────────────────────────── */
+/* Main Content */
 .main-content {
   margin-left: var(--sidebar-w);
   flex: 1;
@@ -153,7 +151,7 @@ body {
   min-height: 100vh;
 }
 
-/* ─── Page Header ────────────────────────────────────────── */
+/* Page Header */
 .page-header {
   margin-bottom: 32px;
 }
@@ -170,7 +168,7 @@ body {
   margin-top: 6px;
 }
 
-/* ─── Cards ──────────────────────────────────────────────── */
+/* Cards */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -189,7 +187,7 @@ body {
   margin-bottom: 12px;
 }
 
-/* ─── Stats Grid ─────────────────────────────────────────── */
+/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -240,7 +238,7 @@ body {
   margin-top: 6px;
 }
 
-/* ─── Buttons ────────────────────────────────────────────── */
+/* Buttons */
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 20px;
@@ -281,7 +279,7 @@ body {
 .btn-sm { padding: 6px 14px; font-size: 12px; }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ─── Form ───────────────────────────────────────────────── */
+/* Form */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-group.full { grid-column: 1 / -1; }
@@ -330,7 +328,7 @@ textarea { resize: vertical; min-height: 80px; }
   background: var(--border);
 }
 
-/* ─── Decision Badge ─────────────────────────────────────── */
+/* Decision Badge */
 .decision-banner {
   border-radius: var(--radius-lg);
   padding: 24px 28px;
@@ -369,7 +367,7 @@ textarea { resize: vertical; min-height: 80px; }
 .decision-amount { font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 700; }
 .decision-amount-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 
-/* ─── Confidence Gauge ───────────────────────────────────── */
+/* Confidence Gauge */
 .confidence-card {
   display: flex;
   align-items: center;
@@ -404,7 +402,7 @@ textarea { resize: vertical; min-height: 80px; }
 .confidence-info .confidence-val   { font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 700; }
 .confidence-info .confidence-desc  { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
 
-/* ─── Audit Trail ────────────────────────────────────────── */
+/* Audit Trail */
 .audit-trail { display: flex; flex-direction: column; gap: 12px; }
 .audit-step {
   display: flex;
@@ -461,7 +459,7 @@ textarea { resize: vertical; min-height: 80px; }
   margin: 2px;
 }
 
-/* ─── Policy Rules Panel ─────────────────────────────────── */
+/* Policy Rules Panel */
 .policy-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .policy-table th {
   font-size: 11px;
@@ -494,7 +492,7 @@ textarea { resize: vertical; min-height: 80px; }
 .chip-PARTIAL  { background: var(--partial-bg); color: var(--partial); }
 .chip-CONFIRMED{ background: var(--purple-dim); color: var(--purple-light); }
 
-/* ─── Claims Table ───────────────────────────────────────── */
+/* Claims Table */
 .claims-table { width: 100%; border-collapse: collapse; }
 .claims-table th {
   font-size: 11px;
@@ -531,7 +529,7 @@ textarea { resize: vertical; min-height: 80px; }
 .status-PARTIAL      { background: var(--partial-bg); color: var(--partial); }
 .status-MANUAL_REVIEW{ background: var(--info-bg);    color: var(--info); }
 
-/* ─── Test Runner ────────────────────────────────────────── */
+/* Test Runner */
 .test-runner-header {
   display: flex;
   align-items: center;
@@ -604,14 +602,14 @@ textarea { resize: vertical; min-height: 80px; }
 }
 .test-detail-panel.open { display: block; }
 
-/* ─── Progress bar ───────────────────────────────────────── */
+/* Progress Bar */
 .progress-bar-wrap { background: var(--bg-secondary); border-radius: 99px; height: 8px; overflow: hidden; }
 .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
 .fill-success { background: linear-gradient(90deg, var(--success), #34d399); }
 .fill-error   { background: linear-gradient(90deg, var(--error), #f87171); }
 .fill-purple  { background: linear-gradient(90deg, var(--purple), var(--purple-light)); }
 
-/* ─── Policy view ────────────────────────────────────────── */
+/* Policy View */
 .policy-section { margin-bottom: 28px; }
 .policy-section h3 {
   font-family: 'Outfit', sans-serif;
@@ -653,7 +651,7 @@ textarea { resize: vertical; min-height: 80px; }
   margin: 4px;
 }
 
-/* ─── Loading Spinner ────────────────────────────────────── */
+/* Loading Spinner */
 .spinner {
   display: inline-block;
   width: 18px; height: 18px;
@@ -664,7 +662,7 @@ textarea { resize: vertical; min-height: 80px; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ─── Toast ──────────────────────────────────────────────── */
+/* Toast Notifications */
 .toast-container {
   position: fixed;
   top: 24px; right: 24px;
@@ -695,7 +693,7 @@ textarea { resize: vertical; min-height: 80px; }
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* ─── Empty States ───────────────────────────────────────── */
+/* Empty States */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -704,7 +702,7 @@ textarea { resize: vertical; min-height: 80px; }
 .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
 .empty-state p { font-size: 14px; }
 
-/* ─── Detail back-link ───────────────────────────────────── */
+/* Detail Back-Link */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -717,22 +715,22 @@ textarea { resize: vertical; min-height: 80px; }
 }
 .back-link:hover { color: var(--purple-light); }
 
-/* ─── Grid helpers ───────────────────────────────────────── */
+/* Grid Helpers */
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
 .mb-20  { margin-bottom: 20px; }
 .mb-28  { margin-bottom: 28px; }
 .mt-16  { margin-top: 16px; }
 
-/* ─── Divider ────────────────────────────────────────────── */
+/* Divider */
 .divider { height: 1px; background: var(--border); margin: 24px 0; }
 
-/* ─── Surface tokens ─────────────────────────────────────── */
+/* Surface Tokens */
 :root {
   --surface-2: rgba(255,255,255,0.03);
 }
 
-/* ─── Document Upload Drop Zone ──────────────────────────── */
+/* Document Upload Drop Zone */
 #dropZone:hover,
 #dropZone.dz-active {
   border-color: var(--purple) !important;
@@ -810,13 +808,13 @@ textarea { resize: vertical; min-height: 80px; }
   font-size: 12px;
 }
 
-/* ─── Scrollbar ──────────────────────────────────────────── */
+/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
 
-/* ─── Responsive ─────────────────────────────────────────── */
+/* Responsive Media Queries */
 @media (max-width: 1400px) {
   .stats-grid { grid-template-columns: repeat(3, 1fr); }
 }

@@ -1,25 +1,11 @@
-"""
-OPD Claim Adjudication Engine
-Implements the 5-step adjudication pipeline defined in adjudication_rules.md
-against policy terms defined in policy_terms.json.
-
-Included features:
-  1. Decision Audit Trail  - per-step pass/fail with details
-  2. Detailed Rejection Reasons - exact rejection codes
-  3. Confidence Score - rule-based confidence calculation
-  4. Manual Review Workflow - fraud detection triggers
-  5. Policy Explanation Panel - policy_rules_applied list
-  (Test Case Runner is in main.py + run_evals.py)
-"""
+# OPD Claim Adjudication Engine based on policy rules.
 
 import json
 import re
 from datetime import datetime, date, timedelta
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Load policy configuration
-# ---------------------------------------------------------------------------
+# Policy config values
 _BASE_DIR = Path(__file__).parent.parent
 POLICY = json.loads((_BASE_DIR / "policy_terms.json").read_text())
 
@@ -81,43 +67,33 @@ DIAG_KW      = ["mri", "ct scan", "x-ray", "x_ray", "xray", "ultrasound", "ecg",
                  "blood test", "urine test", "cbc", "lab"]
 
 
-# ===========================================================================
-# Public API
-# ===========================================================================
+# Main Adjudication Entrypoint
 
 def adjudicate_claim(
     claim_data: dict,
     previous_claims_same_day: int = 0,
     claims_ytd_amount: float = 0,
 ) -> dict:
-    """
-    Run the full 5-step adjudication pipeline and return a comprehensive result.
-    """
+    """Runs the 5-step claim validation pipeline and calculates the approved amount."""
     audit_trail: list = []
     rejection_reasons: list = []
     approved_amount = float(claim_data.get("claim_amount", 0))
     deductions: dict = {}
     partial_items: list = []
 
-    # ------------------------------------------------------------------
-    # Step 1 – Basic Eligibility Check
-    # ------------------------------------------------------------------
+    # Step 1: Basic eligibility check
     step1 = _check_eligibility(claim_data)
     audit_trail.append(step1)
     if not step1["passed"]:
         rejection_reasons.extend(step1["rejection_codes"])
 
-    # ------------------------------------------------------------------
-    # Step 2 – Document Validation
-    # ------------------------------------------------------------------
+    # Step 2: Document validation check
     step2 = _validate_documents(claim_data)
     audit_trail.append(step2)
     if not step2["passed"]:
         rejection_reasons.extend(step2["rejection_codes"])
 
-    # ------------------------------------------------------------------
-    # Step 3 – Coverage Verification (may produce partial approval)
-    # ------------------------------------------------------------------
+    # Step 3: Coverage verification (deducts cosmetic exclusions if partial)
     step3 = _verify_coverage(claim_data)
     audit_trail.append(step3)
     if not step3["passed"]:
@@ -126,9 +102,7 @@ def adjudicate_claim(
         approved_amount = step3["approved_amount"]
         partial_items = step3.get("excluded_items", [])
 
-    # ------------------------------------------------------------------
-    # Step 4 – Limit Validation
-    # ------------------------------------------------------------------
+    # Step 4: Category and annual limit validation
     partial_amt = approved_amount if step3.get("partial") else None
     step4 = _validate_limits(claim_data, claims_ytd_amount, partial_amt)
     audit_trail.append(step4)
@@ -138,22 +112,16 @@ def adjudicate_claim(
         approved_amount = step4["approved_amount"]
         deductions = step4.get("deductions", {})
 
-    # ------------------------------------------------------------------
-    # Step 5 – Medical Necessity Review
-    # ------------------------------------------------------------------
+    # Step 5: Medical necessity check
     step5 = _check_medical_necessity(claim_data)
     audit_trail.append(step5)
     if not step5["passed"]:
         rejection_reasons.extend(step5["rejection_codes"])
 
-    # ------------------------------------------------------------------
-    # Fraud Detection → may override to MANUAL_REVIEW
-    # ------------------------------------------------------------------
+    # Run fraud detection checks
     fraud = _check_fraud(claim_data, previous_claims_same_day)
 
-    # ------------------------------------------------------------------
-    # Final Decision
-    # ------------------------------------------------------------------
+    # Determine final decision status
     unique_rejections = list(dict.fromkeys(rejection_reasons))  # preserve order, dedupe
 
     if fraud["fraud_detected"]:
@@ -206,9 +174,7 @@ def adjudicate_claim(
     }
 
 
-# ===========================================================================
-# Step Implementations
-# ===========================================================================
+# Adjudication Pipeline Step Helper Implementations
 
 def _check_eligibility(claim_data: dict) -> dict:
     """Step 1: Basic Eligibility Check."""
@@ -584,9 +550,7 @@ def _check_medical_necessity(claim_data: dict) -> dict:
     }
 
 
-# ===========================================================================
-# Fraud Detection
-# ===========================================================================
+# Fraud Detection checks
 
 def _check_fraud(claim_data: dict, previous_claims_same_day: int = 0) -> dict:
     """Detect fraud indicators; triggers MANUAL_REVIEW if found."""
@@ -608,9 +572,7 @@ def _check_fraud(claim_data: dict, previous_claims_same_day: int = 0) -> dict:
     return {"fraud_detected": len(flags) > 0, "flags": flags}
 
 
-# ===========================================================================
-# Helpers
-# ===========================================================================
+# Internal utility functions
 
 def _detect_category(claim_data: dict) -> str:
     """Detect claim category to apply the right sub-limit."""

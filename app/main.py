@@ -1,7 +1,4 @@
-"""
-FastAPI Application — Plum OPD Claim Adjudication Tool
-Serves the frontend SPA and exposes REST API endpoints.
-"""
+# FastAPI application routing and API endpoints
 
 import json
 import uuid
@@ -19,21 +16,15 @@ from app.schemas import ClaimSubmit, ClaimResponse
 from app.adjudication import adjudicate_claim
 from app.ai_agent import analyze_claim_with_ai, extract_document_data
 
-# ---------------------------------------------------------------------------
-# Boot: create all DB tables
-# ---------------------------------------------------------------------------
+# Create database tables if they don't exist
 models.Base.metadata.create_all(bind=engine)
 
-# ---------------------------------------------------------------------------
-# Load static data
-# ---------------------------------------------------------------------------
+# Load configuration and test data from JSON files
 _BASE = Path(__file__).parent.parent
 POLICY     = json.loads((_BASE / "policy_terms.json").read_text())
 TEST_CASES = json.loads((_BASE / "test_cases.json").read_text())["test_cases"]
 
-# ---------------------------------------------------------------------------
-# App
-# ---------------------------------------------------------------------------
+# Initialize FastAPI app
 app = FastAPI(
     title="Plum OPD Claim Adjudication Tool",
     description="AI-powered OPD insurance claim adjudication system",
@@ -44,18 +35,14 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory=str(_BASE / "app" / "static")), name="static")
 
 
-# ---------------------------------------------------------------------------
-# Frontend
-# ---------------------------------------------------------------------------
+# Serve frontend SPA
 
 @app.get("/", include_in_schema=False)
 async def serve_frontend():
     return FileResponse(str(_BASE / "app" / "static" / "index.html"))
 
 
-# ---------------------------------------------------------------------------
-# Document Extraction (Gemini Vision)
-# ---------------------------------------------------------------------------
+# Document OCR extraction using Gemini Vision
 
 ALLOWED_MIME = {
     "image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif",
@@ -106,9 +93,7 @@ async def extract_document(
     }
 
 
-# ---------------------------------------------------------------------------
-# Policy
-# ---------------------------------------------------------------------------
+# Policy terms retrieval
 
 @app.get("/api/policy", tags=["Policy"])
 async def get_policy():
@@ -116,9 +101,7 @@ async def get_policy():
     return POLICY
 
 
-# ---------------------------------------------------------------------------
-# Dashboard Stats
-# ---------------------------------------------------------------------------
+# Aggregate stats for dashboard cards
 
 @app.get("/api/stats", tags=["Dashboard"])
 async def get_stats(db: Session = Depends(get_db)):
@@ -151,9 +134,7 @@ async def get_stats(db: Session = Depends(get_db)):
     }
 
 
-# ---------------------------------------------------------------------------
-# Claims
-# ---------------------------------------------------------------------------
+# Claim submission and listing endpoints
 
 @app.post("/api/claims", tags=["Claims"])
 async def submit_claim(claim: ClaimSubmit, db: Session = Depends(get_db)):
@@ -238,9 +219,7 @@ async def get_claim(claim_id: str, db: Session = Depends(get_db)):
     return _serialize_claim(claim)
 
 
-# ---------------------------------------------------------------------------
-# Test Runner
-# ---------------------------------------------------------------------------
+# UI Test suite runner
 
 @app.post("/api/test-runner/run-all", tags=["Testing"])
 async def run_all_tests(db: Session = Depends(get_db)):
@@ -310,9 +289,7 @@ async def run_all_tests(db: Session = Depends(get_db)):
     }
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+# Helper to serialize DB Claim objects
 
 def _serialize_claim(c: models.Claim) -> dict:
     return {

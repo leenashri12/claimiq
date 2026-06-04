@@ -19,3 +19,8 @@ env/
 
 # Generated documents
 sample_documents/*.pdf
+
+# Generation scripts
+gen_rejection_doc.py
+generate_sample_docs.py
+

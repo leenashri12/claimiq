@@ -1,14 +1,12 @@
-/* =========================================================
-   Plum OPD Claim Adjudication — Frontend Application Logic
-   ========================================================= */
+/* Plum OPD Claim Adjudication - Frontend Application Logic */
 
 "use strict";
 
-// ─── State ──────────────────────────────────────────────────
+// Application State
 const API = "";   // same origin
 let currentPage = "dashboard";
 
-// ─── Test case data (mirrors test_cases.json) ────────────────
+// Test case data (mirrors test_cases.json)
 const TEST_CASES_DATA = [
   {
     member_id: "EMP001", member_name: "Rajesh Kumar",
@@ -93,7 +91,7 @@ const TEST_CASES_DATA = [
   },
 ];
 
-// ─── Navigation ──────────────────────────────────────────────
+// Page Navigation
 
 function showPage(page) {
   document.querySelectorAll("section[id^='page-']").forEach(s => s.style.display = "none");
@@ -112,7 +110,7 @@ function showPage(page) {
   if (page === "policy")    loadPolicy();
 }
 
-// ─── Dashboard ───────────────────────────────────────────────
+// Dashboard Page
 
 async function loadDashboard() {
   try {
@@ -145,7 +143,7 @@ async function loadDashboard() {
   }
 }
 
-// ─── Claims List ─────────────────────────────────────────────
+// Claims List Page
 
 async function loadClaimsList() {
   const wrap = document.getElementById("claimsTableWrap");
@@ -404,7 +402,7 @@ function animateConfidence(score) {
   ring.style.strokeDashoffset = offset;
 }
 
-// ─── New Claim Form ──────────────────────────────────────────
+// New Claim Form Submission
 
 function addBillRow() {
   const container = document.getElementById("billItemsContainer");
@@ -527,7 +525,7 @@ async function submitClaim(e) {
   }
 }
 
-// ─── Test Runner ─────────────────────────────────────────────
+// Test Runner Page
 
 async function runAllTests() {
   const btn  = document.getElementById("runTestsBtn");
@@ -613,7 +611,7 @@ function toggleTestDetail(id) {
   if (panel) panel.classList.toggle("open");
 }
 
-// ─── Policy View ─────────────────────────────────────────────
+// Policy View Page
 
 async function loadPolicy() {
   const wrap = document.getElementById("policyContent");
@@ -687,7 +685,7 @@ async function loadPolicy() {
   }
 }
 
-// ─── Document Upload & Gemini Vision Extraction ──────────
+// Document Upload & Gemini Vision Extraction
 
 let _currentDocFile = null;
 let _lastExtraction = null;
@@ -788,7 +786,7 @@ async function extractDocumentData() {
       throw new Error(data.detail || "Extraction failed");
     }
 
-    // ── CRITICAL: backend returns HTTP 200 even on AI failure ──
+    // Backend returns HTTP 200 even on AI failure, check success flag
     if (data.success === false) {
       throw new Error(data.error || "Gemini could not read the document. Try a clearer image.");
     }
@@ -954,7 +952,7 @@ function autoFillFromExtraction() {
     return isNaN(p) ? raw : p.toISOString().split("T")[0];
   }
 
-  // ── Map extracted fields → form fields ─────────────────────────────────
+  // Map extracted fields to form inputs
   setField("memberName",    d.patient_name);
   setField("memberId",      d.member_id);               // ← Employee / Member ID
   setField("hospital",      d.hospital_name);
@@ -968,7 +966,7 @@ function autoFillFromExtraction() {
   setField("treatmentDate", normDate);                  // ← Fixed date format
 
 
-  // Helper: Gemini may return medicines/tests as a string or an array — normalise both
+  // Gemini may return medicines/tests as a string or an array; normalise both
   function toArray(v) {
     if (!v) return [];
     if (Array.isArray(v)) return v.filter(Boolean);
@@ -1017,7 +1015,7 @@ function autoFillFromExtraction() {
   }
 }
 
-// ─── Utilities ───────────────────────────────────────────────
+// Helpers & Utilities
 
 async function apiFetch(url, opts = {}) {
   // Do NOT force Content-Type for FormData (browser sets it with boundary)
@@ -1098,14 +1096,14 @@ function rejectionDesc(code) {
   return map[code] || code;
 }
 
-// ─── Approved Amount Cell ─────────────────────────────────────
+// Approved Amount Cell Render Helper
 function approvedAmountCell(decision, amount) {
   if (decision === "REJECTED")      return `<span style="color:var(--error);font-weight:600">₹0</span>`;
   if (decision === "MANUAL_REVIEW") return `<span style="color:var(--warning);font-weight:600">Pending</span>`;
   return `₹${formatNum(amount || 0)}`;
 }
 
-// ─── Download Decision Report (PDF) ──────────────────────────
+// Download Decision Report (PDF Generation)
 async function downloadDecisionReport() {
   // Load jsPDF from global (loaded via CDN in index.html)
   const { jsPDF } = window.jspdf;
@@ -1128,7 +1126,7 @@ async function downloadDecisionReport() {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const PW = doc.internal.pageSize.getWidth();
 
-  // ── Header ──────────────────────────────────────────────────
+  // PDF Header
   doc.setFillColor(79, 70, 229);   // indigo
   doc.rect(0, 0, PW, 28, "F");
   doc.setTextColor(255, 255, 255);
@@ -1142,7 +1140,7 @@ async function downloadDecisionReport() {
 
   let y = 36;
 
-  // ── Decision Banner ─────────────────────────────────────────
+  // Decision Banner in PDF
   const bColor = decisionText === "APPROVED" ? [16,185,129]
                : decisionText === "REJECTED"  ? [239,68,68]
                : decisionText === "PARTIAL"   ? [249,115,22]
@@ -1160,7 +1158,7 @@ async function downloadDecisionReport() {
   doc.setTextColor(0, 0, 0);
   y += 30;
 
-  // ── Claim Details ───────────────────────────────────────────
+  // Claim Details in PDF
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.setFillColor(240, 242, 255);
@@ -1184,7 +1182,7 @@ async function downloadDecisionReport() {
   });
   y += 4;
 
-  // ── Audit Trail ─────────────────────────────────────────────
+  // Audit Trail Table in PDF
   const auditSteps = document.querySelectorAll(".audit-step");
   if (auditSteps.length) {
     doc.setFontSize(11);
@@ -1221,7 +1219,7 @@ async function downloadDecisionReport() {
     y = doc.lastAutoTable.finalY + 8;
   }
 
-  // ── Rejection Reasons ────────────────────────────────────────
+  // Rejection Reasons in PDF
   const codes = document.querySelectorAll(".code-pill");
   if (codes.length) {
     if (y > 240) { doc.addPage(); y = 20; }
@@ -1238,7 +1236,7 @@ async function downloadDecisionReport() {
     y += 4;
   }
 
-  // ── Footer ───────────────────────────────────────────────────
+  // PDF Footer
   const pageCount = doc.internal.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
@@ -1253,7 +1251,7 @@ async function downloadDecisionReport() {
   showToast(`📥 Report downloaded: ${filename}`, "success");
 }
 
-// ─── Boot ────────────────────────────────────────────────────
+  // Boot / Initialisation
 document.addEventListener("DOMContentLoaded", () => {
   showPage("dashboard");
 });

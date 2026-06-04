@@ -1,15 +1,4 @@
-"""
-AI Agent — Gemini Integration (google-genai SDK)
-
-Features:
-  1. Document Extraction  — Extract structured data from uploaded prescription/bill images or PDFs
-  2. Claim Analysis        — Enrich adjudication with AI confidence, medical necessity, fraud detection
-
-Falls back gracefully if the API key is missing or a call fails.
-
-SDK: google-genai (official SDK)
-Docs: https://ai.google.dev/gemini-api/docs/quickstart?lang=python
-"""
+# AI Agent module integrating Gemini API for document OCR and claim review.
 
 import os
 import json
@@ -24,30 +13,10 @@ VISION_MODEL = "gemini-2.0-flash"      # Primary vision model (verified availabl
 TEXT_MODEL   = "gemini-2.0-flash-lite" # For text-only claim analysis (lighter quota)
 
 
-# ===========================================================================
-# 1. Document Extraction (Vision)
-# ===========================================================================
+# ─── Document OCR Extraction (Vision) ───
 
 def extract_document_data(file_bytes: bytes, mime_type: str, doc_type: str = "auto") -> dict:
-    """
-    Send an uploaded image or PDF to Gemini Vision and extract structured
-    medical document data.
-
-    Args:
-        file_bytes: Raw bytes of the uploaded file
-        mime_type:  e.g. 'image/jpeg', 'image/png', 'application/pdf'
-        doc_type:   'prescription', 'bill', or 'auto' (let AI decide)
-
-    Returns:
-        {
-          "success": True/False,
-          "document_type": "prescription" | "bill" | "report",
-          "extracted_data": { ... structured fields ... },
-          "raw_text": "...",
-          "confidence": 0.0-1.0,
-          "notes": "..."
-        }
-    """
+    """Extract structured data from an uploaded prescription or bill image/PDF using Gemini."""
     if not GOOGLE_API_KEY:
         return {
             "success": False,
@@ -202,20 +171,10 @@ Critical rules:
 """
 
 
-# ===========================================================================
-# 2. Claim Analysis (Text-only AI enrichment)
-# ===========================================================================
+# ─── Claim Analysis (Clinical & Necessity Review) ───
 
 def analyze_claim_with_ai(claim_data: dict) -> dict:
-    """
-    Send claim context to Gemini for an AI-powered review.
-
-    Returns a dict with:
-        confidence (float 0-1), medical_necessity_justified (bool),
-        fraud_indicators (list[str]), notes (str), ai_powered (bool)
-
-    Falls back to safe defaults if the API is unavailable.
-    """
+    """Evaluates clinical necessity and highlights potential fraud indicators."""
     if not GOOGLE_API_KEY:
         return _fallback_result("No API key configured — using rule-based defaults.")
 
