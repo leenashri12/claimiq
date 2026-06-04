@@ -517,6 +517,7 @@ async function submitClaim(e) {
     const data = await apiFetch("/api/claims", { method: "POST", body: JSON.stringify(payload) });
     showToast(`Claim ${data.claim_id} — ${data.result.decision}`, data.result.decision === "APPROVED" ? "success" : "info");
     await openClaim(data.claim_id);
+    clearDocUpload();
   } catch (err) {
     showToast("Failed to submit claim: " + err.message, "error");
   } finally {
@@ -738,6 +739,21 @@ function handleDocFileSelect(file) {
   rp.innerHTML = "";
 }
 
+function clearClaimForm() {
+  const form = document.getElementById("claimForm");
+  if (form) form.reset();
+
+  const container = document.getElementById("billItemsContainer");
+  if (container) {
+    container.innerHTML = `
+      <div class="bill-item-row" style="display:grid; grid-template-columns:1fr 1fr auto; gap:12px; margin-bottom:10px; align-items:center">
+        <input type="text" class="bill-item-key" placeholder="Item (e.g. consultation_fee)" />
+        <input type="number" class="bill-item-val" placeholder="Amount (₹)" step="0.01" />
+        <button type="button" class="btn btn-secondary btn-sm" onclick="removeBillRow(this)" style="width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center">✕</button>
+      </div>`;
+  }
+}
+
 function clearDocUpload() {
   _currentDocFile = null;
   _lastExtraction = null;
@@ -749,6 +765,7 @@ function clearDocUpload() {
   rp.innerHTML = "";
   document.getElementById("docPreviewThumb").innerHTML = "";
   document.getElementById("docFileName").textContent = "";
+  clearClaimForm();
 }
 
 async function extractDocumentData() {
@@ -916,6 +933,7 @@ function autoFillFromExtraction() {
     return;
   }
 
+  clearClaimForm();
   const d = _lastExtraction.extracted_data || {};
   let filled = 0;
 
