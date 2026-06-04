@@ -65,14 +65,6 @@ claimiq/
 
 ---
 
-## 📸 Screenshots
-
-Here is the dashboard displaying real-time metrics, active claims list, and the premium dark interface:
-
-![Claims Dashboard](C:/Users/LENOVO/.gemini/antigravity-ide/brain/58deaf31-f1a7-499d-9ae9-0bcc269fcc5b/dashboard_final_verify_1780556358101.png)
-
----
-
 ## 🚀 How to Run It
 
 ### 1. Set Up Environment
