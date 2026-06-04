@@ -25,13 +25,13 @@ def extract_document_data(file_bytes: bytes, mime_type: str, doc_type: str = "au
         }
 
     # Model fallback chain for document vision extraction.
-    # If the primary model is rate-limited or overloaded, we try the next.
+    # If the primary model is rate-limited, overloaded, or unsupported, we try the next.
     vision_model_chain = [
         "gemini-2.0-flash",
-        "gemini-1.5-flash",
-        "gemini-2.0-flash-lite",
+        "gemini-flash-latest",     # Stable 1.5 Flash alias
         "gemini-2.5-flash",
-        "gemini-1.5-pro",
+        "gemini-2.0-flash-lite",
+        "gemini-pro-latest",       # Stable 1.5 Pro alias
     ]
 
     from google import genai
@@ -41,7 +41,6 @@ def extract_document_data(file_bytes: bytes, mime_type: str, doc_type: str = "au
     prompt = _build_extraction_prompt(doc_type)
 
     last_error = None
-    quota_exhausted = False
 
     for model_name in vision_model_chain:
         try:
@@ -73,44 +72,31 @@ def extract_document_data(file_bytes: bytes, mime_type: str, doc_type: str = "au
                 "ai_model":       model_name,
             }
 
-        except json.JSONDecodeError:
-            return {
-                "success": False,
-                "error": "Gemini returned an unexpected response format. Please try again.",
-                "extracted_data": {},
-            }
+        except json.JSONDecodeError as exc:
+            last_error = Exception("Returned response is not valid JSON")
+            continue
 
         except Exception as exc:
-            err_str = str(exc)
-            # Detect quota / rate-limit / transient service errors (429, 503, 500, UNAVAILABLE, etc.) — try next model silently
-            is_transient = (
-                "429" in err_str
-                or "503" in err_str
-                or "500" in err_str
-                or "RESOURCE_EXHAUSTED" in err_str
-                or "UNAVAILABLE" in err_str
-                or "quota" in err_str.lower()
-                or "high demand" in err_str.lower()
-                or "overloaded" in err_str.lower()
-            )
-            if is_transient:
-                last_error = exc
-                quota_exhausted = True
-                continue  # try next model in the chain
-            # Any other error → return immediately with a clean message
-            return {
-                "success": False,
-                "error": f"Document extraction failed: {err_str[:200]}",
-                "extracted_data": {},
-            }
+            last_error = exc
+            continue
 
-    # All models exhausted or unavailable
-    if quota_exhausted:
+    # All models in the chain failed
+    err_str = str(last_error)
+    is_transient = (
+        "503" in err_str
+        or "429" in err_str
+        or "RESOURCE_EXHAUSTED" in err_str
+        or "UNAVAILABLE" in err_str
+        or "overloaded" in err_str.lower()
+        or "high demand" in err_str.lower()
+    )
+
+    if is_transient:
         return {
             "success": False,
             "error": (
-                f"Gemini API is currently overloaded or quota exceeded. "
-                f"Details: {str(last_error)[:150]}. "
+                "Gemini API is currently overloaded or quota exceeded. "
+                f"Details: {err_str[:150]}. "
                 "Please retry in a few minutes, check your quota at https://aistudio.google.com, "
                 "or try another document."
             ),
@@ -119,7 +105,7 @@ def extract_document_data(file_bytes: bytes, mime_type: str, doc_type: str = "au
 
     return {
         "success": False,
-        "error": f"Document extraction failed: {str(last_error)[:200]}",
+        "error": f"Document extraction failed: {err_str[:200]}",
         "extracted_data": {},
     }
 
