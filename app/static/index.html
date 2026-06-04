@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Plum — OPD Claim Adjudication Tool</title>
+  <meta name="description" content="AI-powered OPD insurance claim adjudication system by Plum. Automated decision engine with full audit trail and policy transparency." />
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="app-shell">
+
+  <!-- ═══════════════ SIDEBAR ═══════════════ -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🌸</div>
+      <span class="logo-text">Plum</span>
+    </div>
+
+    <div class="nav-section-label">Navigation</div>
+
+    <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')">
+      <span class="icon">📊</span><span>Dashboard</span>
+    </div>
+    <div class="nav-item" id="nav-new-claim" onclick="showPage('new-claim')">
+      <span class="icon">➕</span><span>New Claim</span>
+    </div>
+    <div class="nav-item" id="nav-claims" onclick="showPage('claims')">
+      <span class="icon">📋</span><span>All Claims</span>
+    </div>
+
+    <div class="nav-section-label">Tools</div>
+
+    <div class="nav-item" id="nav-test-runner" onclick="showPage('test-runner')">
+      <span class="icon">🧪</span><span>Test Runner</span>
+    </div>
+    <div class="nav-item" id="nav-policy" onclick="showPage('policy')">
+      <span class="icon">📄</span><span>Policy Terms</span>
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="sidebar-policy-badge">
+        <span class="badge-label">Policy Active</span>
+        <span>PLUM_OPD_2024</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+  <main class="main-content" id="mainContent">
+
+    <!-- ── DASHBOARD ── -->
+    <section id="page-dashboard">
+      <div class="page-header">
+        <h1>Claims Dashboard</h1>
+        <p class="subtitle">Real-time overview of OPD claim adjudication activity</p>
+      </div>
+
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card purple">
+          <div class="stat-label">Total Claims</div>
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-sub">Submitted to date</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Approval Rate <span style="font-size:10px;opacity:.7">(Approved Only)</span></div>
+          <div class="stat-value" id="stat-rate">—%</div>
+          <div class="stat-sub" id="stat-approved-count">0 approved</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">Successful Adjudications</div>
+          <div class="stat-value" id="stat-successful">—</div>
+          <div class="stat-sub" id="stat-success-rate">Approved + Partial</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Rejected</div>
+          <div class="stat-value" id="stat-rejected">—</div>
+          <div class="stat-sub">Claims denied coverage</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Manual Review</div>
+          <div class="stat-value" id="stat-manual">—</div>
+          <div class="stat-sub">Pending final decision</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Total Disbursed</div>
+          <div class="stat-value" id="stat-disbursed">₹—</div>
+          <div class="stat-sub" id="stat-confidence">AI confidence —%</div>
+        </div>
+      </div>
+
+      <!-- Recent Claims -->
+      <div class="card">
+        <div class="card-title">Recent Claims</div>
+        <div id="recentClaimsWrap">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No claims yet. Submit your first claim to get started.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── NEW CLAIM ── -->
+    <section id="page-new-claim" style="display:none">
+      <div class="page-header">
+        <h1>Submit New Claim</h1>
+        <p class="subtitle">Fill in the claim details — our AI engine will adjudicate instantly</p>
+      </div>
+
+      <!-- Document Upload Card (Gemini Vision OCR) -->
+      <div class="card" id="docUploadCard" style="margin-bottom:20px">
+        <div class="form-section-title" style="margin-bottom:12px">
+          📎 Upload Medical Document
+          <span style="font-size:11px;font-weight:400;color:var(--text-muted);margin-left:8px">(Optional — Gemini AI will auto-fill form fields)</span>
+        </div>
+
+        <div id="dropZone"
+          onclick="document.getElementById('docFileInput').click()"
+          ondragover="event.preventDefault();this.classList.add('dz-active')"
+          ondragleave="this.classList.remove('dz-active')"
+          ondrop="handleDocDrop(event)"
+          style="
+            border:2px dashed var(--border);
+            border-radius:14px;
+            padding:32px 20px;
+            text-align:center;
+            cursor:pointer;
+            transition:border-color .2s,background .2s;
+            background:var(--surface-2)
+          ">
+          <div style="font-size:36px;margin-bottom:10px">📄</div>
+          <div style="font-weight:600;color:var(--text-primary);margin-bottom:4px">Drop file here or click to browse</div>
+          <div style="font-size:12px;color:var(--text-muted)">Supports: JPG, PNG, WebP, PDF · Max 10 MB</div>
+          <input type="file" id="docFileInput" accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+            style="display:none" onchange="handleDocFileSelect(this.files[0])" />
+        </div>
+
+        <!-- File preview row -->
+        <div id="docPreviewRow" style="display:none;margin-top:14px;align-items:center;gap:14px">
+          <div id="docPreviewThumb" style="width:56px;height:56px;border-radius:8px;overflow:hidden;background:var(--surface-2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:26px"></div>
+          <div style="flex:1;min-width:0">
+            <div id="docFileName" style="font-weight:600;color:var(--text-primary);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            <div id="docFileSize" style="font-size:11px;color:var(--text-muted);margin-top:2px"></div>
+          </div>
+          <button type="button" onclick="clearDocUpload()" class="btn btn-secondary btn-sm" style="flex-shrink:0">✕ Remove</button>
+        </div>
+
+        <!-- Type selector + button -->
+        <div id="docExtractRow" style="display:none;margin-top:14px;gap:10px;align-items:center">
+          <select id="docTypeSelect" style="flex:1;padding:10px 14px;width:auto">
+            <option value="auto">Auto-detect document type</option>
+            <option value="prescription">Prescription</option>
+            <option value="bill">Bill / Receipt</option>
+            <option value="diagnostic_report">Diagnostic Report</option>
+            <option value="pharmacy_bill">Pharmacy Bill</option>
+          </select>
+          <button type="button" class="btn btn-primary" id="extractBtn" onclick="extractDocumentData()" style="flex-shrink:0">
+            <span id="extractBtnText">✨ Extract with Gemini</span>
+          </button>
+        </div>
+
+        <!-- Extraction result panel -->
+        <div id="extractResultPanel" style="display:none;margin-top:16px"></div>
+      </div>
+
+      <form id="claimForm" onsubmit="submitClaim(event)">
+        <div class="card">
+          <div class="form-section-title">👤 Member Details</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="memberId">Member ID</label>
+              <input type="text" id="memberId" placeholder="e.g. EMP001" required />
+            </div>
+            <div class="form-group">
+              <label for="memberName">Member Name</label>
+              <input type="text" id="memberName" placeholder="e.g. Rajesh Kumar" required />
+            </div>
+            <div class="form-group">
+              <label for="treatmentDate">Treatment Date</label>
+              <input type="date" id="treatmentDate" required />
+            </div>
+            <div class="form-group">
+              <label for="memberJoinDate">Policy Start Date <span style="color:var(--text-muted);font-weight:400">(optional — for waiting period check)</span></label>
+              <input type="date" id="memberJoinDate" />
+            </div>
+          </div>
+
+          <div class="form-section-title">🏥 Treatment & Claim</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="claimAmount">Claim Amount (₹)</label>
+              <input type="number" id="claimAmount" min="1" step="0.01" placeholder="e.g. 1500" required />
+            </div>
+            <div class="form-group">
+              <label for="hospital">Hospital / Clinic Name <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+              <input type="text" id="hospital" placeholder="e.g. Apollo Hospitals" list="hospitalList" />
+              <datalist id="hospitalList">
+                <option value="Apollo Hospitals" />
+                <option value="Fortis Healthcare" />
+                <option value="Max Healthcare" />
+                <option value="Manipal Hospitals" />
+                <option value="Narayana Health" />
+              </datalist>
+            </div>
+            <div class="form-group">
+              <label for="previousClaims">Previous Claims Same Day</label>
+              <input type="number" id="previousClaims" min="0" value="0" />
+            </div>
+            <div class="form-group" style="justify-content:flex-end; padding-top:24px">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:500">
+                <input type="checkbox" id="cashlessRequest" style="width:auto" />
+                Cashless Request
+              </label>
+            </div>
+          </div>
+
+          <div class="form-section-title">📝 Prescription Details</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="doctorName">Doctor Name</label>
+              <input type="text" id="doctorName" placeholder="e.g. Dr. Sharma" />
+            </div>
+            <div class="form-group">
+              <label for="doctorReg">Doctor Registration No.</label>
+              <input type="text" id="doctorReg" placeholder="e.g. KA/45678/2015" />
+            </div>
+            <div class="form-group">
+              <label for="diagnosis">Diagnosis</label>
+              <input type="text" id="diagnosis" placeholder="e.g. Viral fever" />
+            </div>
+            <div class="form-group">
+              <label for="treatment">Treatment / Procedure</label>
+              <input type="text" id="treatment" placeholder="e.g. Panchakarma therapy" />
+            </div>
+            <div class="form-group full">
+              <label for="medicines">Medicines Prescribed <span style="color:var(--text-muted);font-weight:400">(comma-separated)</span></label>
+              <input type="text" id="medicines" placeholder="e.g. Paracetamol 650mg, Vitamin C" />
+            </div>
+            <div class="form-group full">
+              <label for="procedures">Procedures <span style="color:var(--text-muted);font-weight:400">(comma-separated, e.g. for dental)</span></label>
+              <input type="text" id="procedures" placeholder="e.g. Root canal treatment, Teeth whitening" />
+            </div>
+            <div class="form-group full">
+              <label for="testsPrescribed">Tests Prescribed <span style="color:var(--text-muted);font-weight:400">(comma-separated)</span></label>
+              <input type="text" id="testsPrescribed" placeholder="e.g. MRI Lumbar Spine, CBC" />
+            </div>
+          </div>
+
+          <div class="form-section-title">🧾 Bill Breakdown</div>
+          <div id="billItemsContainer">
+            <div class="bill-item-row" style="display:grid; grid-template-columns:1fr 1fr auto; gap:12px; margin-bottom:10px; align-items:center">
+              <input type="text" class="bill-item-key" placeholder="Item (e.g. consultation_fee)" />
+              <input type="number" class="bill-item-val" placeholder="Amount (₹)" step="0.01" />
+              <button type="button" class="btn btn-secondary btn-sm" onclick="removeBillRow(this)" style="width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center">✕</button>
+            </div>
+          </div>
+          <button type="button" class="btn btn-ghost btn-sm mt-16" onclick="addBillRow()">+ Add Bill Item</button>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:20px; align-items:center">
+          <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+            <span id="submitBtnText">⚡ Adjudicate Claim</span>
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="loadTestCase()">Load Test Case</button>
+          <select id="testCaseSelect" style="width:auto; padding:10px 14px">
+            <option value="">— Select test case —</option>
+            <option value="0">TC001 – Simple Consultation</option>
+            <option value="1">TC002 – Dental Partial Approval</option>
+            <option value="2">TC003 – Limit Exceeded</option>
+            <option value="3">TC004 – Missing Documents</option>
+            <option value="4">TC005 – Pre-existing Waiting Period</option>
+            <option value="5">TC006 – Alternative Medicine</option>
+            <option value="6">TC007 – MRI Pre-auth Required</option>
+            <option value="7">TC008 – Fraud Detection</option>
+            <option value="8">TC009 – Excluded Treatment</option>
+            <option value="9">TC010 – Network Hospital Cashless</option>
+          </select>
+        </div>
+      </form>
+    </section>
+
+    <!-- ── CLAIM DETAIL ── -->
+    <section id="page-claim-detail" style="display:none">
+      <div class="back-link" onclick="showPage('claims')">← Back to Claims</div>
+      <div id="claimDetailContent"></div>
+    </section>
+
+    <!-- ── CLAIMS LIST ── -->
+    <section id="page-claims" style="display:none">
+      <div class="page-header">
+        <h1>All Claims</h1>
+        <p class="subtitle">Click any row to view the full adjudication audit trail</p>
+      </div>
+      <div class="card">
+        <div id="claimsTableWrap">
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No claims submitted yet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── TEST RUNNER ── -->
+    <section id="page-test-runner" style="display:none">
+      <div class="page-header">
+        <h1>Test Case Runner</h1>
+        <p class="subtitle">Validate the adjudication engine against all 10 provided test scenarios</p>
+      </div>
+
+      <div class="test-runner-header">
+        <div style="font-size:14px; color:var(--text-secondary)">
+          10 test cases from <code style="color:var(--purple-light)">test_cases.json</code> — covering approval, partial, rejection, fraud, and manual review scenarios.
+        </div>
+        <button class="btn btn-primary" onclick="runAllTests()" id="runTestsBtn">
+          <span id="runTestsBtnText">▶ Run All Tests</span>
+        </button>
+      </div>
+
+      <div id="testSummaryStrip" style="display:none" class="test-summary-strip">
+        <div class="test-summary-item">
+          <div class="ts-val" id="ts-total">10</div>
+          <div class="ts-label">Total</div>
+        </div>
+        <div class="test-summary-item">
+          <div class="ts-val pass" id="ts-pass">—</div>
+          <div class="ts-label">Passed</div>
+        </div>
+        <div class="test-summary-item">
+          <div class="ts-val fail" id="ts-fail">—</div>
+          <div class="ts-label">Failed</div>
+        </div>
+        <div class="test-summary-item" style="flex:1">
+          <div style="display:flex; align-items:center; gap:12px">
+            <div>
+              <div class="ts-val pass" id="ts-rate">—%</div>
+              <div class="ts-label">Pass Rate</div>
+            </div>
+            <div style="flex:1">
+              <div class="progress-bar-wrap">
+                <div class="progress-bar-fill fill-success" id="ts-progress" style="width:0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="testResultsList"></div>
+    </section>
+
+    <!-- ── POLICY TERMS ── -->
+    <section id="page-policy" style="display:none">
+      <div class="page-header">
+        <h1>Policy Terms</h1>
+        <p class="subtitle">PLUM_OPD_2024 — Plum OPD Advantage policy configuration</p>
+      </div>
+      <div id="policyContent"></div>
+    </section>
+
+  </main>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

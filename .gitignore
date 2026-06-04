@@ -1,0 +1,21 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Databases
+*.db
+*.sqlite3
+
+# Local configuration / secrets
+.env
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Generated documents
+sample_documents/*.pdf
