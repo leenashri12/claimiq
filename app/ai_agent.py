@@ -24,14 +24,14 @@ def extract_document_data(file_bytes: bytes, mime_type: str, doc_type: str = "au
             "extracted_data": {},
         }
 
-    # ── Model fallback chain ──────────────────────────────────────────────────
-    # These are verified-available models for this API key (vision-capable).
-    # On 429 quota error we silently try the next model in the chain.
-    # Primary: gemini-2.0-flash  →  Fallback 1: gemini-2.0-flash-lite  →  Fallback 2: gemini-2.5-flash
+    # Model fallback chain for document vision extraction.
+    # If the primary model is rate-limited or overloaded, we try the next.
     vision_model_chain = [
-        "gemini-2.0-flash",       # Primary — best speed/quality balance
-        "gemini-2.0-flash-lite",  # Lighter version, separate quota pool
-        "gemini-2.5-flash",       # Most capable — use if others are rate-limited
+        "gemini-2.0-flash",
+        "gemini-1.5-flash",
+        "gemini-2.0-flash-lite",
+        "gemini-2.5-flash",
+        "gemini-1.5-pro",
     ]
 
     from google import genai
