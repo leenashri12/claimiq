@@ -1,4 +1,4 @@
-/* Plum OPD Claim Adjudication - Frontend Application Logic */
+/* ClaimIQ OPD Claim Adjudication - Frontend Application Logic */
 
 "use strict";
 
@@ -1150,10 +1150,10 @@ async function downloadDecisionReport() {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("Plum OPD — Claim Decision Report", 14, 12);
+  doc.text("ClaimIQ — Claim Decision Report", 14, 12);
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
-  doc.text(`Generated: ${new Date().toLocaleString("en-IN")}  |  Policy: PLUM_OPD_2024`, 14, 22);
+  doc.text(`Generated: ${new Date().toLocaleString("en-IN")}  |  Policy: CLAIMIQ_OPD_2024`, 14, 22);
   doc.setTextColor(0, 0, 0);
 
   let y = 36;
@@ -1260,11 +1260,11 @@ async function downloadDecisionReport() {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 150);
-    doc.text(`Plum OPD Claim Adjudication System  |  Page ${i} of ${pageCount}  |  Confidential`, 14, 290);
+    doc.text(`ClaimIQ Claim Adjudication System  |  Page ${i} of ${pageCount}  |  Confidential`, 14, 290);
     doc.setTextColor(0, 0, 0);
   }
 
-  const filename = `Plum_Decision_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+  const filename = `ClaimIQ_Decision_Report_${new Date().toISOString().split("T")[0]}.pdf`;
   doc.save(filename);
   showToast(`📥 Report downloaded: ${filename}`, "success");
 }

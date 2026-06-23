@@ -27,7 +27,7 @@ def run_evals():
 
     print()
     print("=" * 70)
-    print("  PLUM OPD CLAIM ADJUDICATION - TEST EVALUATION REPORT")
+    print("  CLAIMIQ OPD CLAIM ADJUDICATION - TEST EVALUATION REPORT")
     print("=" * 70)
 
     results = []

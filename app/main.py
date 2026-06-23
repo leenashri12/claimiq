@@ -26,7 +26,7 @@ TEST_CASES = json.loads((_BASE / "test_cases.json").read_text())["test_cases"]
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Plum OPD Claim Adjudication Tool",
+    title="ClaimIQ OPD Claim Adjudication Tool",
     description="AI-powered OPD insurance claim adjudication system",
     version="1.0.0",
 )

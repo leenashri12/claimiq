@@ -15,7 +15,7 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     is_prod = "PORT" in os.environ
     
-    print("Plum OPD Claim Adjudication Tool")
+    print("ClaimIQ OPD Claim Adjudication Tool")
     print("-" * 40)
     print(f"Starting server at:  http://0.0.0.0:{port}")
     print(f"API docs at:         http://0.0.0.0:{port}/docs")
